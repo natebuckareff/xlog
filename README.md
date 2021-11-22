@@ -7,7 +7,7 @@ Basic Idea:
 The database is a collection of single-writer/multi-reader append-only log
 files.
 
-We write to the database by submitting transactions that can only read existing
+Write to the database by submitting transactions that can only read existing
 records and append new records.
 
 Each record is a 4-tuple consisting of:
