@@ -9,13 +9,13 @@ partition storage and execute transactions.
 
 ```sql
 CREATE TABLE nodes (
-	id 		    INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-	uuid		UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+    id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    uuid        UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
     hostname    TEXT NOT NULL,
     port        INT NOT NULL,
     cpus        INT NOT NULL,
 
-	UNIQUE (hostname, port)
+    UNIQUE (hostname, port)
 )
 ```
 
@@ -25,10 +25,10 @@ A database is a collection of partitions, which are stored on nodes.
 
 ```sql
 CREATE TABLE databases (
-	id 		    INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-	uuid		UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
-	version		INT NOT NULL,
-	name		TEXT NOT NULL UNIQUE
+    id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    uuid        UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+    version     INT NOT NULL,
+    name        TEXT NOT NULL UNIQUE
 )
 ```
 
@@ -36,17 +36,17 @@ CREATE TABLE databases (
 
 ```sql
 CREATE TABLE attributes (
-	pk			    INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-	id			    INT NOT NULL GENERATED ALWAYS AS IDENTITY,
-	db_id		    INT NOT NULL REFERENCES databases (id),	
-	db_version	    INT NOT NULL,
-	time		    TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
-	name		    TEXT NOT NULL,
-	handler_id	    UUID NOT NULL,
-	is_unique	    BOOLEAN NOT NULL,
+    pk              INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id              INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    db_id           INT NOT NULL REFERENCES databases (id),    
+    db_version      INT NOT NULL,
+    time            TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    name            TEXT NOT NULL,
+    handler_id      UUID NOT NULL,
+    is_unique       BOOLEAN NOT NULL,
 
-	UNIQUE          (id, db_id, db_version),
-	UNIQUE 		    (db_id, name)
+    UNIQUE          (id, db_id, db_version),
+    UNIQUE          (db_id, name)
 );
 ```
 
@@ -70,15 +70,15 @@ Topics are referenced by their `id` and `db_version`
 
 ```sql
 CREATE TABLE topics (
-	pk			    INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-	id			    INT NOT NULL GENERATED ALWAYS AS IDENTITY,
-	db_id		    INT NOT NULL REFERENCES databases (id),
-	db_version	    INT NOT NULL,
-	time		    TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
-	name		    TEXT NOT NULL,
+    pk              INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id              INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    db_id           INT NOT NULL REFERENCES databases (id),
+    db_version      INT NOT NULL,
+    time            TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
+    name            TEXT NOT NULL,
 
-	UNIQUE	        (id, db_id, db_version),
-	UNIQUE		    (db_id, name)
+    UNIQUE          (id, db_id, db_version),
+    UNIQUE          (db_id, name)
 );
 ```
 
@@ -100,10 +100,10 @@ TODO What happens when a partition is deleted?
 
 ```sql
 CREATE TABLE partitions (
-	id 				INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-	uuid			UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
-    topic_id		INT NOT NULL REFERENCES topics (pk),
-    node_id 		INT NOT NULL REFERENCES nodes (id)
+    id              INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    uuid            UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+    topic_id        INT NOT NULL REFERENCES topics (pk),
+    node_id         INT NOT NULL REFERENCES nodes (id)
 )
 ```
 
@@ -121,7 +121,7 @@ TODO What happens when a point is deleted?
 
 ```sql
 CREATE TABLE partition_ring (
-	point 	        INT PRIMARY KEY,
+    point           INT PRIMARY KEY,
     partition_id    INT NOT NULL REFERENCES partitions (id)
 )
 ```
