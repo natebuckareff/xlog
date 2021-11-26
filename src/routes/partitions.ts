@@ -1,55 +1,53 @@
 import { FastifyPluginCallback } from 'fastify';
-import { nodes } from '../repos/node.js';
+import { partitions } from '../repos/partitions.js';
 
 const route: FastifyPluginCallback = async fastify => {
     fastify.route({
         method: 'GET',
-        url: '/nodes',
+        url: '/partitions',
         handler: async () => {
-            return await fastify.pg.transact(nodes.getAll);
+            return await fastify.pg.transact(partitions.getAll);
         },
     });
 
     fastify.route({
         method: 'POST',
-        url: '/nodes',
+        url: '/partitions',
         schema: {
-            body: nodes.Payload,
+            body: partitions.Payload,
         },
         handler: async request => {
-            const payload = request.body as nodes.Payload;
+            const payload = request.body as partitions.Payload;
             return await fastify.pg.transact(async trx => {
-                return await nodes.create(trx, payload);
+                return await partitions.create(trx, payload);
             });
         },
     });
 
     fastify.route({
         method: 'GET',
-        url: '/node/:id',
+        url: '/partition',
         schema: {
-            params: nodes.Param,
+            querystring: partitions.Query,
         },
         handler: async request => {
-            const { id } = request.params as nodes.Param;
+            const { value } = request.query as partitions.Query;
             return await fastify.pg.transact(async trx => {
-                return await nodes.getOne(trx, id);
+                return await partitions.getOneByHash(trx, value);
             });
         },
     });
 
     fastify.route({
-        method: 'PUT',
-        url: '/node/:id',
+        method: 'GET',
+        url: '/partition/:id',
         schema: {
-            params: nodes.Param,
-            body: nodes.Payload,
+            params: partitions.Param,
         },
         handler: async request => {
-            const { id } = request.params as nodes.Param;
-            const payload = request.body as nodes.Payload;
+            const { id } = request.params as partitions.Param;
             return await fastify.pg.transact(async trx => {
-                return await nodes.update(trx, id, payload);
+                return await partitions.getOne(trx, id);
             });
         },
     });

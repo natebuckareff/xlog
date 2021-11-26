@@ -9,14 +9,13 @@ partition storage and execute transactions.
 
 ```sql
 CREATE TABLE nodes (
-    id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    uuid        UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+    id          UUID DEFAULT uuid_generate_v1mc() PRIMARY KEY,
     hostname    TEXT NOT NULL,
     port        INT NOT NULL,
     cpus        INT NOT NULL,
 
     UNIQUE (hostname, port)
-)
+);
 ```
 
 ## Databases
@@ -25,11 +24,11 @@ A database is a collection of partitions, which are stored on nodes.
 
 ```sql
 CREATE TABLE databases (
-    id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    uuid        UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+    id          UUID DEFAULT uuid_generate_v1mc() PRIMARY KEY,
     version     INT NOT NULL,
     name        TEXT NOT NULL UNIQUE
-)
+    -- deleted     BOOLEAN NOT NULL
+);
 ```
 
 ## Attributes
@@ -37,18 +36,20 @@ CREATE TABLE databases (
 ```sql
 CREATE TABLE attributes (
     pk              INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    id              INT NOT NULL GENERATED ALWAYS AS IDENTITY,
-    db_id           INT NOT NULL REFERENCES databases (id),    
+    id              UUID DEFAULT uuid_generate_v1mc(),
+    db_id           UUID NOT NULL REFERENCES databases (id),    
     db_version      INT NOT NULL,
     time            TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
     name            TEXT NOT NULL,
     handler_id      UUID NOT NULL,
     is_unique       BOOLEAN NOT NULL,
+    -- deleted     BOOLEAN NOT NULL,
 
-    UNIQUE          (id, db_id, db_version),
-    UNIQUE          (db_id, name)
+    UNIQUE          (id, db_id, db_version)
 );
 ```
+
+TODO unique name
 
 The attributes table is append-only.
 
@@ -71,16 +72,18 @@ Topics are referenced by their `id` and `db_version`
 ```sql
 CREATE TABLE topics (
     pk              INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    id              INT NOT NULL GENERATED ALWAYS AS IDENTITY,
-    db_id           INT NOT NULL REFERENCES databases (id),
+    id              UUID DEFAULT uuid_generate_v1mc(),
+    db_id           UUID NOT NULL REFERENCES databases (id),
     db_version      INT NOT NULL,
     time            TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
     name            TEXT NOT NULL,
+    -- deleted     BOOLEAN NOT NULL,
 
-    UNIQUE          (id, db_id, db_version),
-    UNIQUE          (db_id, name)
+    UNIQUE          (id, db_id, db_version)
 );
 ```
+
+TODO unique name
 
 ## Partitions
 
@@ -100,11 +103,15 @@ TODO What happens when a partition is deleted?
 
 ```sql
 CREATE TABLE partitions (
-    id              INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    uuid            UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+    pk              INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id              UUID DEFAULT uuid_generate_v1mc(),
+    db_id           UUID NOT NULL REFERENCES databases (id),
+    db_version      INT NOT NULL,
+    time            TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
     topic_id        INT NOT NULL REFERENCES topics (pk),
-    node_id         INT NOT NULL REFERENCES nodes (id)
-)
+    node_id         UUID NOT NULL REFERENCES nodes (id),
+    -- unique_id       INT REFERENCES attributes (pk)
+);
 ```
 
 ## Partition Ring
@@ -122,6 +129,6 @@ TODO What happens when a point is deleted?
 ```sql
 CREATE TABLE partition_ring (
     point           INT PRIMARY KEY,
-    partition_id    INT NOT NULL REFERENCES partitions (id)
-)
+    partition_pk    INT NOT NULL REFERENCES partitions (pk)
+);
 ```

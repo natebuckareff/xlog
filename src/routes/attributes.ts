@@ -1,55 +1,55 @@
 import { FastifyPluginCallback } from 'fastify';
-import { databases } from '../repos/databases.js';
+import { attributes } from '../repos/attributes.js';
 
 const route: FastifyPluginCallback = async fastify => {
     fastify.route({
         method: 'GET',
-        url: '/databases',
+        url: '/attributes',
         handler: async () => {
-            return await fastify.pg.transact(databases.getAll);
+            return await fastify.pg.transact(attributes.getAll);
         },
     });
 
     fastify.route({
         method: 'POST',
-        url: '/databases',
+        url: '/attributes',
         schema: {
-            body: databases.Payload,
+            body: attributes.Payload,
         },
         handler: async request => {
-            const { name } = request.body as databases.Payload;
+            const payload = request.body as attributes.Payload;
             return await fastify.pg.transact(async trx => {
-                return await databases.create(trx, name);
+                return await attributes.create(trx, payload);
             });
         },
     });
 
     fastify.route({
         method: 'GET',
-        url: '/database/:id',
+        url: '/attribute/:id',
         schema: {
-            params: databases.Param,
+            params: attributes.Param,
         },
         handler: async request => {
-            const { id } = request.params as databases.Param;
+            const { id } = request.params as attributes.Param;
             return await fastify.pg.transact(async trx => {
-                return await databases.getOne(trx, id);
+                return await attributes.getOne(trx, id);
             });
         },
     });
 
     fastify.route({
         method: 'PUT',
-        url: '/database/:id',
+        url: '/attribute/:id',
         schema: {
-            params: databases.Param,
-            body: databases.Payload,
+            params: attributes.Param,
+            body: attributes.Payload,
         },
         handler: async request => {
-            const { id } = request.params as databases.Param;
-            const { name } = request.body as databases.Payload;
+            const { id } = request.params as attributes.Param;
+            const payload = request.body as attributes.Payload;
             return await fastify.pg.transact(async trx => {
-                return await databases.update(trx, id, name);
+                return await attributes.update(trx, id, payload);
             });
         },
     });

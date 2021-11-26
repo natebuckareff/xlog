@@ -1,6 +1,7 @@
 lockfileVersion: 5.3
 
 specifiers:
+  '@sinclair/typebox': ^0.22.1
   '@types/node': ^16.11.9
   '@types/pg': ^8.6.1
   dotenv: ^10.0.0
@@ -17,6 +18,7 @@ specifiers:
   zod: ^3.11.6
 
 dependencies:
+  '@sinclair/typebox': 0.22.1
   '@types/node': 16.11.9
   '@types/pg': 8.6.1
   dotenv: 10.0.0
@@ -38,6 +40,10 @@ packages:
     resolution: {integrity: sha512-gvCOUNpXsWrIQ3A4aXCLIdblL0tDq42BG/2Xw7oxbil9h11uow10ztS2GuFazNBfjbrsZ5nl+nPl5jDSjj5TSg==}
     dependencies:
       ajv: 6.12.6
+    dev: false
+
+  /@sinclair/typebox/0.22.1:
+    resolution: {integrity: sha512-cYkZ5oYd/KrzwcocLtGI4QRi6oniV4eP8IEefEhZp8YjLhrsrHiiaeChs8a9T/YKIlIjHMoxoOCWOUkZ/vviNw==}
     dev: false
 
   /@types/node/16.11.9:

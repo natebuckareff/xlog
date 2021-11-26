@@ -1,32 +1,43 @@
+import { Static, Type } from '@sinclair/typebox';
 import { PoolClient } from 'pg';
-import { Result } from './databases';
-
-export interface Node {
-    id: number;
-    uuid: string;
-    hostname: string;
-    port: number;
-    cpus: number;
-}
+import { Result } from './databases.js';
 
 export namespace nodes {
-    export type External = Omit<Node, 'id'>;
-    export type Payload = Omit<External, 'uuid'>;
+    export const Model = Type.Object({
+        id: Type.String({ format: 'uuid' }),
+        hostname: Type.String({ format: 'hostname' }),
+        port: Type.Integer({ minimum: 0, maximum: 0xffff }),
+        cpus: Type.Integer({ minimum: 1 }),
+    });
 
-    export const getAll = async (pg: PoolClient): Result<External[]> => {
-        const { rows } = await pg.query<External>(
-            `SELECT uuid, hostname, port, cpus
+    export const Param = Type.Object({
+        id: Type.String({ format: 'uuid' }),
+    });
+
+    export const Payload = Type.Object({
+        hostname: Type.String({ format: 'hostname' }),
+        port: Type.Integer({ minimum: 0, maximum: 0xffff }),
+        cpus: Type.Integer({ minimum: 1 }),
+    });
+
+    export type Model = Static<typeof Model>;
+    export type Param = Static<typeof Param>;
+    export type Payload = Static<typeof Payload>;
+
+    export const getAll = async (pg: PoolClient): Result<Model[]> => {
+        const { rows } = await pg.query<Model>(
+            `SELECT id, hostname, port, cpus
              FROM nodes`
         );
         return { result: rows };
     };
 
-    export const getOne = async (pg: PoolClient, uuid: string): Result<External | null> => {
-        const { rows } = await pg.query<External>(
-            `SELECT uuid, hostname, port, cpus
+    export const getOne = async (pg: PoolClient, id: string): Result<Model | null> => {
+        const { rows } = await pg.query<Model>(
+            `SELECT id, hostname, port, cpus
              FROM nodes
-             where uuid = $1`,
-            [uuid]
+             where id = $1`,
+            [id]
         );
         return { result: rows.length === 0 ? null : rows[0] };
     };
@@ -38,33 +49,28 @@ export namespace nodes {
             return { result: null };
         }
 
-        const { uuid } = await pg
-            .query<{ uuid: string }>(
+        const { id } = await pg
+            .query<{ id: string }>(
                 `INSERT INTO nodes (hostname, port, cpus)
                  VALUES ($1, $2, $3)
-                 RETURNING uuid`,
+                 RETURNING id`,
                 [hostname, port, cpus]
             )
             .then(({ rows }) => rows[0]);
 
-        return { result: uuid };
+        return { result: id };
     };
 
-    export const update = async (uuid: Node['uuid'], change: Partial<Payload>) => {
-        const { hostname, port, cpus } = change;
-
-        if (hostname !== undefined || port !== undefined) {
-            if (port === undefined) {
-            }
-        }
-
-        // Update node
-        throw Error('NotImplemented');
-    };
-
-    export const remove = async (uuid: Node['uuid']) => {
-        // Delete node
-        throw Error('NotImplemented');
+    export const update = async (pg: PoolClient, id: string, payload: Payload): Result<boolean> => {
+        const { hostname, port, cpus } = payload;
+        const result = await pg.query<{ id: number }>(
+            `UPDATE nodes
+             SET hostname = $1, port = $2, cpus = $3
+             WHERE id = $4
+             RETURNING id`,
+            [hostname, port, cpus, id]
+        );
+        return { result: result.rowCount === 1 };
     };
 }
 
